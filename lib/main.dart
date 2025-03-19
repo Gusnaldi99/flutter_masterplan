@@ -11,6 +11,7 @@ class MasterPlanApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(primarySwatch: Colors.purple),
       home: PlanScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }

@@ -11,6 +11,15 @@ class PlanScreen extends StatefulWidget {
 
 class _PlanScreenState extends State<PlanScreen> {
   Plan plan = const Plan();
+  late ScrollController scrollController;
+  @override
+  void initState() {
+    super.initState();
+    scrollController =
+        ScrollController()..addListener(() {
+          FocusScope.of(context).requestFocus(FocusNode());
+        });
+  }
 
   Widget _buildAddTaskButton() {
     return FloatingActionButton(
@@ -26,8 +35,19 @@ class _PlanScreenState extends State<PlanScreen> {
     );
   }
 
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
+
   Widget _buildList() {
     return ListView.builder(
+      controller: scrollController,
+      keyboardDismissBehavior:
+          Theme.of(context).platform == TargetPlatform.iOS
+              ? ScrollViewKeyboardDismissBehavior.onDrag
+              : ScrollViewKeyboardDismissBehavior.manual,
       itemCount: plan.tasks.length,
       itemBuilder: (context, index) => _buildTaskTile(plan.tasks[index], index),
     );
