@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_masterplan/Models/data_layer.dart';
+import 'package:flutter_masterplan/Models/plan.dart';
 
 class PlanProvider extends InheritedNotifier<ValueNotifier<List<Plan>>> {
   const PlanProvider({

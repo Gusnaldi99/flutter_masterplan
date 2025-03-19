@@ -3,7 +3,8 @@ import 'package:flutter_masterplan/Models/data_layer.dart';
 import 'package:flutter_masterplan/Provider/plan_provider.dart';
 
 class PlanScreen extends StatefulWidget {
-  const PlanScreen({super.key});
+  final Plan plan;
+  const PlanScreen({super.key, required this.plan});
 
   @override
   State createState() => _PlanScreenState();
@@ -21,31 +22,47 @@ class _PlanScreenState extends State<PlanScreen> {
         });
   }
 
+  @override
+  Widget build(BuildContext context) {
+    ValueNotifier<List<Plan>> plansNotifier = PlanProvider.of(context);
+
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.plan.name)),
+      body: ValueListenableBuilder<List<Plan>>(
+        valueListenable: plansNotifier,
+        builder: (context, plans, child) {
+          Plan currentPlan = plans.firstWhere(
+            (p) => p.name == widget.plan.name,
+          );
+          return Column(
+            children: [
+              Expanded(child: _buildList(currentPlan)),
+              SafeArea(child: Text(currentPlan.completenessMessage)),
+            ],
+          );
+        },
+      ),
+      floatingActionButton: _buildAddTaskButton(context),
+    );
+  }
+
   Widget _buildAddTaskButton(BuildContext context) {
-    // Ubah tipe data sesuai dengan yang dikembalikan oleh PlanProvider.of
     ValueNotifier<List<Plan>> plansNotifier = PlanProvider.of(context);
     return FloatingActionButton(
       child: const Icon(Icons.add),
       onPressed: () {
-        // Asumsikan kita bekerja dengan plan pertama dalam list
-        List<Plan> currentPlans = plansNotifier.value;
-        if (currentPlans.isNotEmpty) {
-          Plan currentPlan = currentPlans[0];
-          List<Plan> newPlans = List<Plan>.from(currentPlans);
-          newPlans[0] = Plan(
-            name: currentPlan.name,
-            tasks: List<Task>.from(currentPlan.tasks)..add(const Task()),
-          );
-          plansNotifier.value = newPlans;
+        int planIndex = plansNotifier.value.indexWhere(
+          (p) => p.name == widget.plan.name,
+        );
+        if (planIndex != -1) {
+          List<Task> updatedTasks = List<Task>.from(
+            plansNotifier.value[planIndex].tasks,
+          )..add(const Task());
+          plansNotifier.value = List<Plan>.from(plansNotifier.value)
+            ..[planIndex] = Plan(name: widget.plan.name, tasks: updatedTasks);
         }
       },
     );
-  }
-
-  @override
-  void dispose() {
-    scrollController.dispose();
-    super.dispose();
   }
 
   Widget _buildList(Plan plan) {
@@ -63,35 +80,35 @@ class _PlanScreenState extends State<PlanScreen> {
       leading: Checkbox(
         value: task.complete,
         onChanged: (selected) {
-          List<Plan> currentPlans = plansNotifier.value;
-          if (currentPlans.isNotEmpty) {
-            Plan currentPlan = currentPlans[0];
-            List<Plan> newPlans = List<Plan>.from(currentPlans);
-            newPlans[0] = Plan(
-              name: currentPlan.name,
-              tasks: List<Task>.from(currentPlan.tasks)
-                ..[index] = Task(
-                  description: task.description,
-                  complete: selected ?? false,
-                ),
-            );
-            plansNotifier.value = newPlans;
+          int planIndex = plansNotifier.value.indexWhere(
+            (p) => p.name == widget.plan.name,
+          );
+          if (planIndex != -1) {
+            plansNotifier.value = List<Plan>.from(plansNotifier.value)
+              ..[planIndex] = Plan(
+                name: widget.plan.name,
+                tasks: List<Task>.from(plansNotifier.value[planIndex].tasks)
+                  ..[index] = Task(
+                    description: task.description,
+                    complete: selected ?? false,
+                  ),
+              );
           }
         },
       ),
       title: TextFormField(
         initialValue: task.description,
         onChanged: (text) {
-          List<Plan> currentPlans = plansNotifier.value;
-          if (currentPlans.isNotEmpty) {
-            Plan currentPlan = currentPlans[0];
-            List<Plan> newPlans = List<Plan>.from(currentPlans);
-            newPlans[0] = Plan(
-              name: currentPlan.name,
-              tasks: List<Task>.from(currentPlan.tasks)
-                ..[index] = Task(description: text, complete: task.complete),
-            );
-            plansNotifier.value = newPlans;
+          int planIndex = plansNotifier.value.indexWhere(
+            (p) => p.name == widget.plan.name,
+          );
+          if (planIndex != -1) {
+            plansNotifier.value = List<Plan>.from(plansNotifier.value)
+              ..[planIndex] = Plan(
+                name: widget.plan.name,
+                tasks: List<Task>.from(plansNotifier.value[planIndex].tasks)
+                  ..[index] = Task(description: text, complete: task.complete),
+              );
           }
         },
       ),
@@ -99,30 +116,8 @@ class _PlanScreenState extends State<PlanScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Master Plan')),
-      body: ValueListenableBuilder<List<Plan>>(
-        valueListenable: PlanProvider.of(context),
-        builder: (context, plans, child) {
-          if (plans.isEmpty) {
-            return const Center(child: Text('No plans available'));
-          }
-
-          Plan plan = plans[0]; // Asumsikan kita bekerja dengan plan pertama
-          int completedCount = plan.tasks.where((task) => task.complete).length;
-          String completenessMessage =
-              '$completedCount out of ${plan.tasks.length} tasks';
-
-          return Column(
-            children: [
-              Expanded(child: _buildList(plan)),
-              SafeArea(child: Text(completenessMessage)),
-            ],
-          );
-        },
-      ),
-      floatingActionButton: _buildAddTaskButton(context),
-    );
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
   }
 }
