@@ -74,6 +74,6 @@ Menggambarkan perubahan struktur widget dalam aplikasi Flutter setelah dilakukan
 
 ## 3. Penjelasan Langkah 14
 Komponen widget _buildMasterPlans()
-Menampilkan daftar rencana (Plan) jika tersedia. Jika tidak ada rencana, menampilkan pesan dan ikon . Memungkinkan navigasi ke PlanScreen untuk melihat detail rencana.
+- Menampilkan daftar rencana (Plan) jika tersedia. Jika tidak ada rencana, menampilkan pesan dan ikon . Memungkinkan navigasi ke PlanScreen untuk melihat detail rencana.
 
 
